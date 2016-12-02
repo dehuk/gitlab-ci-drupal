@@ -1,15 +1,10 @@
 FROM debian:latest
 
 # Update OS
-RUN apt-get update -y\
-    && apt-get upgrade -y
+RUN apt-get update -y && apt-get upgrade -y
 
 # Install php
-RUN apt-get install -y php5 \
-    git \
-    php5-curl \
-    curl \
-    php5-cli
+RUN apt-get install -y php5 git php5-curl curl php5-cli
 
 # Install composer
 RUN curl -sS https://getcomposer.org/installer | php
