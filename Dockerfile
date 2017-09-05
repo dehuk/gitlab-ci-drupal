@@ -1,20 +1,31 @@
-FROM debian:latest
+FROM php:7.1-apache
 
-# Update OS
-RUN apt-get update -y && apt-get upgrade -y
+RUN set -ex \
+	&& buildDeps=' \
+		libjpeg62-turbo-dev \
+		libpng12-dev \
+		libpq-dev \
+		libmcrypt-dev \
+	' \
+	&& apt-get update && apt-get install -y --no-install-recommends $buildDeps && rm -rf /var/lib/apt/lists/* \
+	&& docker-php-ext-configure gd \
+		--with-jpeg-dir=/usr \
+		--with-png-dir=/usr \
+	&& docker-php-ext-install -j "$(nproc)" gd mcrypt mbstring opcache pdo pdo_mysql zip exif\
+	&& apt-mark manual \
+		libjpeg62-turbo \
+		libpq5 \
+	&& apt-get purge -y --auto-remove $buildDeps
 
-# Install php
-RUN apt-get install -y php5 git php5-curl curl php5-cli
+RUN apt-get update && apt-get install -y mysql-client libfreetype6-dev openssh-client rsync libssh2-1-dev
 
-# Install composer
-RUN curl -sS https://getcomposer.org/installer | php
-RUN mv composer.phar /usr/local/bin/composer
-RUN chmod +x /usr/local/bin/composer
+RUN pecl install ssh2-1.0 \
+  && echo "extension=ssh2.so" > $PHP_INI_DIR/conf.d/ext-ssh2.ini
 
-# Install drush
-RUN php -r "readfile('https://s3.amazonaws.com/files.drush.org/drush.phar');" > drush
-RUN php drush core-status
-RUN chmod +x drush
-RUN mv drush /usr/local/bin
-RUN drush init -y
-RUN drush -h
+RUN php -r "readfile('https://s3.amazonaws.com/files.drush.org/drush.phar');" > drush \
+    && chmod +x drush \
+    && mv drush /usr/local/bin
+
+RUN curl -sS https://getcomposer.org/installer | php \
+    && mv composer.phar /usr/local/bin/composer \
+    && chmod +x /usr/local/bin/composer
