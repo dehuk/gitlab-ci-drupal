@@ -5,13 +5,12 @@ RUN set -ex \
 		libjpeg62-turbo-dev \
 		libpng12-dev \
 		libpq-dev \
-		libmcrypt-dev \
 	' \
 	&& apt-get update && apt-get install -y --no-install-recommends $buildDeps && rm -rf /var/lib/apt/lists/* \
 	&& docker-php-ext-configure gd \
 		--with-jpeg-dir=/usr \
 		--with-png-dir=/usr \
-	&& docker-php-ext-install -j "$(nproc)" gd mcrypt mbstring opcache pdo pdo_mysql zip exif\
+	&& docker-php-ext-install -j "$(nproc)" gd mbstring opcache pdo pdo_mysql zip exif\
 	&& apt-mark manual \
 		libjpeg62-turbo \
 		libpq5 \
